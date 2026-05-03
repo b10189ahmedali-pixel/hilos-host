@@ -14,6 +14,9 @@ import {
 import { api, ApiError, getToken } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Eraser } from "lucide-react";
 
 interface Server {
   id: string;
@@ -37,6 +40,7 @@ function ConsolePage() {
   const [input, setInput] = useState("");
   const [history, setHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
+  const [autoscroll, setAutoscroll] = useState(true);
 
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectAttempt = useRef(0);
@@ -198,8 +202,11 @@ function ConsolePage() {
   }, [serverId]);
 
   useEffect(() => {
+    if (!autoscroll) return;
     logRef.current?.scrollTo({ top: logRef.current.scrollHeight });
-  }, [lines]);
+  }, [lines, autoscroll]);
+
+  const clearLogs = () => setLines([]);
 
   const send = (e: React.FormEvent) => {
     e.preventDefault();
@@ -293,6 +300,13 @@ function ConsolePage() {
         actions={
           <div className="flex items-center gap-2">
             <Badge variant={variant[status]}>{status}</Badge>
+            <div className="flex items-center gap-2 px-2">
+              <Switch id="autoscroll" checked={autoscroll} onCheckedChange={setAutoscroll} />
+              <Label htmlFor="autoscroll" className="text-xs cursor-pointer">Autoscroll</Label>
+            </div>
+            <Button size="sm" variant="outline" onClick={clearLogs} disabled={lines.length === 0} title="Clear logs">
+              <Eraser className="h-4 w-4 mr-1" /> Clear
+            </Button>
             {(status === "closed" || status === "error") && serverId && (
               <Button size="sm" variant="outline" onClick={reconnectNow}>
                 Reconnect
