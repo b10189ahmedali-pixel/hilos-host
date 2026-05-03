@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { useRouter } from "@tanstack/react-router";
 import {
   auth as authApi,
   getStoredUser,
@@ -27,11 +28,11 @@ export interface AuthState {
 const AuthContext = createContext<AuthState | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const router = useRouter();
   const [user, setUser] = useState<User | null>(() => getStoredUser());
   const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
-    // If we have a token but stale user info, refresh.
     if (getToken() && !user) {
       setLoading(true);
       authApi
@@ -46,6 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         })
         .finally(() => setLoading(false));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const value: AuthState = {
@@ -71,6 +73,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(null);
     },
   };
+
+  // Sync auth state into router context so beforeLoad guards can read it.
+  useEffect(() => {
+    router.update({ context: { ...router.options.context, auth: value } });
+    router.invalidate();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, loading]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
