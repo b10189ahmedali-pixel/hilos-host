@@ -6,7 +6,6 @@ APP_NAME="hiloshost"
 
 clear
 
-# ---------- Colors ----------
 GREEN='\033[0;32m'
 RED='\033[0;31m'
 CYAN='\033[0;36m'
@@ -17,49 +16,31 @@ NC='\033[0m'
 detect_port() {
     if grep -q "\"dev\":.*vite" package.json 2>/dev/null; then
         echo "5173"
-        return
-    fi
-
-    if grep -q "\"start\":.*react-scripts" package.json 2>/dev/null; then
+    elif grep -q "\"start\":.*react-scripts" package.json 2>/dev/null; then
         echo "3000"
-        return
-    fi
-
-    if grep -q "\"start\":" package.json 2>/dev/null; then
+    else
         echo "8080"
-        return
     fi
-
-    echo "8080"
 }
 
-# ---------- Install Requirements ----------
+# ---------- Install Dependencies ----------
 install_requirements() {
-    echo -e "${CYAN}Installing requirements...${NC}"
+    echo -e "${CYAN}Installing dependencies...${NC}"
 
     sudo apt update -y
-    sudo apt install -y curl git unzip build-essential ufw
+    sudo apt install -y git curl unzip build-essential ufw
 
     if ! command -v node >/dev/null 2>&1; then
         curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
         sudo apt install -y nodejs
     fi
 
-    if ! command -v pm2 >/dev/null 2>&1; then
-        sudo npm install -g pm2
-    fi
+    sudo npm install -g pm2
 }
 
-# ---------- Firewall ----------
-open_port() {
-    PORT=$1
-    sudo ufw allow "$PORT"/tcp >/dev/null 2>&1
-}
-
-# ---------- Clone / Update ----------
-clone_or_update() {
-    if [ -d "$FOLDER/.git" ]; then
-        echo -e "${YELLOW}Repository exists. Updating...${NC}"
+# ---------- Clone Repo ----------
+clone_repo() {
+    if [ -d "$FOLDER" ]; then
         cd "$FOLDER" || exit
         git reset --hard
         git pull
@@ -69,65 +50,44 @@ clone_or_update() {
     fi
 }
 
-# ---------- Start App ----------
-start_app() {
+# ---------- Install App ----------
+install_app() {
+    clear
+    install_requirements
+    clone_repo
+
+    npm install
+
     PORT=$(detect_port)
+    echo -e "${GREEN}Detected Port: $PORT${NC}"
 
-    echo -e "${CYAN}Detected Port: $PORT${NC}"
-
-    open_port "$PORT"
+    sudo ufw allow $PORT/tcp >/dev/null 2>&1
 
     pm2 delete "$APP_NAME" >/dev/null 2>&1
 
-    # Vite
-    if grep -q "\"dev\":.*vite" package.json 2>/dev/null; then
-        pm2 start "npm run dev -- --host 0.0.0.0 --port $PORT" --name "$APP_NAME"
-
-    # CRA
-    elif grep -q "\"start\":.*react-scripts" package.json 2>/dev/null; then
-        PORT=$PORT pm2 start npm --name "$APP_NAME" -- start
-
-    # Generic npm start
-    elif grep -q "\"start\":" package.json 2>/dev/null; then
-        PORT=$PORT pm2 start npm --name "$APP_NAME" -- start
-
-    else
-        echo -e "${RED}No runnable script found in package.json${NC}"
-        return
-    fi
+    PORT=$PORT pm2 start npm --name "$APP_NAME" -- start
 
     pm2 save
 
-    echo ""
-    echo -e "${GREEN}Application Started Successfully${NC}"
-    echo -e "${GREEN}Running on Port: $PORT${NC}"
+    echo -e "${GREEN}Panel Running on Port: $PORT${NC}"
 }
 
-# ---------- Install Files ----------
-install_files() {
-    clear
-    install_requirements
-    clone_or_update
-
-    echo -e "${CYAN}Installing npm packages...${NC}"
-    npm install
-
-    start_app
-}
-
-# ---------- Admin Setup ----------
+# ---------- ADMIN SETUP (FIXED) ----------
 admin_setup() {
     clear
-    cd "$FOLDER" 2>/dev/null || { echo "Install files first."; return; }
+    cd "$FOLDER" 2>/dev/null || { echo "Run install first."; return; }
 
-    echo "========== ADMIN SETUP =========="
+    echo "====== ADMIN SETUP ======"
+
     read -p "Username: " USERNAME
     read -p "Password: " PASSWORD
     read -p "Email: " EMAIL
     read -p "First Name: " FIRST
     read -p "Last Name: " LAST
 
-cat > admin.json <<EOF
+    mkdir -p "$FOLDER"
+
+cat > "$FOLDER/admin.json" <<EOF
 {
   "username": "$USERNAME",
   "password": "$PASSWORD",
@@ -137,41 +97,42 @@ cat > admin.json <<EOF
 }
 EOF
 
-    echo -e "${GREEN}Admin file created successfully.${NC}"
+    echo -e "${GREEN}admin.json created successfully${NC}"
 }
 
-# ---------- Node Setup ----------
+# ---------- NODE SETUP (FIXED) ----------
 node_setup() {
     clear
-    cd "$FOLDER" 2>/dev/null || { echo "Install files first."; return; }
+    cd "$FOLDER" 2>/dev/null || { echo "Run install first."; return; }
 
-    echo "========== NODE SETUP =========="
+    echo "====== NODE SETUP ======"
+
     read -p "Node Token: " TOKEN
-    read -p "Token ID: " TOKENID
-    read -p "Panel Link: " PANEL
-    read -p "Panel ID: " PANELID
+    read -p "Token ID: " TOKEN_ID
+    read -p "Panel Link: " PANEL_LINK
+    read -p "Panel ID: " PANEL_ID
 
-cat > nodes.json <<EOF
+cat > "$FOLDER/nodes.json" <<EOF
 {
   "token": "$TOKEN",
-  "token_id": "$TOKENID",
-  "panel_link": "$PANEL",
-  "panel_id": "$PANELID"
+  "token_id": "$TOKEN_ID",
+  "panel_link": "$PANEL_LINK",
+  "panel_id": "$PANEL_ID"
 }
 EOF
 
-    mkdir -p servers
+    mkdir -p "$FOLDER/servers"
 
-    echo -e "${GREEN}Node configuration saved.${NC}"
+    echo -e "${GREEN}nodes.json created successfully${NC}"
 }
 
 # ---------- Restart ----------
-restart_panel() {
+restart() {
     pm2 restart "$APP_NAME"
 }
 
 # ---------- Logs ----------
-view_logs() {
+logs() {
     pm2 logs "$APP_NAME"
 }
 
@@ -179,30 +140,28 @@ view_logs() {
 while true
 do
 clear
-echo "======================================"
-echo "         HILOS HOST INSTALLER         "
-echo "======================================"
-echo "1) Install / Update Files + Run"
+echo "=================================="
+echo "        HILOS HOST PANEL         "
+echo "=================================="
+echo "1) Install / Run Panel"
 echo "2) Admin Setup"
 echo "3) Node Setup"
-echo "4) Restart Panel"
-echo "5) View Logs"
-echo "6) PM2 Status"
-echo "7) Exit"
-echo "======================================"
+echo "4) Restart"
+echo "5) Logs"
+echo "6) Exit"
+echo "=================================="
 
-read -p "Select Option: " choice
+read -p "Select: " opt
 
-case $choice in
-1) install_files ;;
+case $opt in
+1) install_app ;;
 2) admin_setup ;;
 3) node_setup ;;
-4) restart_panel ;;
-5) view_logs ;;
-6) pm2 status ;;
-7) exit ;;
-*) echo "Invalid Option" ;;
+4) restart ;;
+5) logs ;;
+6) exit ;;
+*) echo "Invalid" ;;
 esac
 
-read -p "Press Enter To Continue..."
+read -p "Press Enter..."
 done
