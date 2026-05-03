@@ -280,17 +280,70 @@ function Limit({ label, value }: { label: string; value: string }) {
   );
 }
 
+interface Limits {
+  ramMb: number;
+  cpuPercent: number;
+  diskMb: number;
+  networkMbps: number;
+}
+
 interface Egg {
   id: string;
   name: string;
   dockerImage?: string;
   description?: string;
   ports?: number[];
+  minLimits?: Partial<Limits>;
+  recommendedLimits?: Partial<Limits>;
 }
 interface Node {
   id: string;
   name: string;
   fqdn?: string;
+  defaultLimits?: Partial<Limits>;
+  capacity?: Partial<Limits>;
+}
+
+function computeEffectiveLimits(
+  egg: Egg | undefined,
+  node: Node | undefined,
+  fallback: Limits | undefined,
+): { limits: Limits | null; errors: string[] } {
+  const errors: string[] = [];
+  const base: Partial<Limits> =
+    egg?.recommendedLimits ?? node?.defaultLimits ?? fallback ?? {};
+  const limits: Limits = {
+    ramMb: base.ramMb ?? fallback?.ramMb ?? 0,
+    cpuPercent: base.cpuPercent ?? fallback?.cpuPercent ?? 0,
+    diskMb: base.diskMb ?? fallback?.diskMb ?? 0,
+    networkMbps: base.networkMbps ?? fallback?.networkMbps ?? 0,
+  };
+
+  // Enforce egg minimums
+  const min = egg?.minLimits;
+  if (min) {
+    (Object.keys(min) as (keyof Limits)[]).forEach((k) => {
+      const required = min[k];
+      if (typeof required === "number" && limits[k] < required) {
+        errors.push(`Egg requires ${k} ≥ ${required}, got ${limits[k]}.`);
+      }
+    });
+  }
+
+  // Enforce node capacity / defaults as upper bound
+  const cap = node?.capacity ?? node?.defaultLimits;
+  if (cap) {
+    (Object.keys(cap) as (keyof Limits)[]).forEach((k) => {
+      const max = cap[k];
+      if (typeof max === "number" && limits[k] > max) {
+        errors.push(
+          `Selected node only allows ${k} ≤ ${max}, egg needs ${limits[k]}.`,
+        );
+      }
+    });
+  }
+
+  return { limits, errors };
 }
 
 function CreateServerDialog({ onCreated }: { onCreated: () => void }) {
@@ -322,11 +375,21 @@ function CreateServerDialog({ onCreated }: { onCreated: () => void }) {
   }, [open]);
 
   const selectedEgg = eggs?.find((e) => e.id === eggId);
-  const limits = settings?.defaultLimits;
+  const selectedNode = nodes?.find((n) => n.id === nodeId);
+  const { limits: effective, errors: limitErrors } = computeEffectiveLimits(
+    selectedEgg,
+    selectedNode,
+    settings?.defaultLimits,
+  );
+  const hasLimitError = limitErrors.length > 0;
 
   const create = async () => {
     if (!name.trim() || !eggId || !nodeId) {
       setErr("Name, egg, and node are required.");
+      return;
+    }
+    if (hasLimitError) {
+      setErr("Resource limits don't fit the selected egg/node. Resolve errors first.");
       return;
     }
     setCreating(true);
@@ -334,7 +397,7 @@ function CreateServerDialog({ onCreated }: { onCreated: () => void }) {
     try {
       await api("/servers", {
         method: "POST",
-        body: JSON.stringify({ name: name.trim(), eggId, nodeId }),
+        body: JSON.stringify({ name: name.trim(), eggId, nodeId, limits: effective }),
       });
       setOpen(false);
       setName("");
@@ -393,22 +456,33 @@ function CreateServerDialog({ onCreated }: { onCreated: () => void }) {
               </SelectContent>
             </Select>
           </div>
-          {limits && (
+          {effective && (eggId || nodeId) && (
             <div className="rounded-md border border-border bg-muted/40 p-3 text-xs">
-              <div className="font-medium mb-2 text-foreground">Effective resource limits</div>
-              <div className="grid grid-cols-2 gap-2">
-                <Limit label="RAM" value={`${limits.ramMb} MB`} />
-                <Limit label="CPU" value={`${limits.cpuPercent}%`} />
-                <Limit label="Disk" value={`${limits.diskMb} MB`} />
-                <Limit label="Network" value={`${limits.networkMbps} Mbps`} />
+              <div className="font-medium mb-2 text-foreground">
+                Effective resource limits
+                {selectedEgg ? ` for ${selectedEgg.name}` : ""}
               </div>
+              <div className="grid grid-cols-2 gap-2">
+                <Limit label="RAM" value={`${effective.ramMb} MB`} />
+                <Limit label="CPU" value={`${effective.cpuPercent}%`} />
+                <Limit label="Disk" value={`${effective.diskMb} MB`} />
+                <Limit label="Network" value={`${effective.networkMbps} Mbps`} />
+              </div>
+              {hasLimitError && (
+                <ul className="mt-2 list-disc pl-4 text-destructive">
+                  {limitErrors.map((m, i) => <li key={i}>{m}</li>)}
+                </ul>
+              )}
             </div>
           )}
           {err && <div className="text-sm text-destructive">{err}</div>}
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => setOpen(false)} disabled={creating}>Cancel</Button>
-          <Button onClick={create} disabled={creating || !eggId || !nodeId || !name.trim()}>
+          <Button
+            onClick={create}
+            disabled={creating || !eggId || !nodeId || !name.trim() || hasLimitError}
+          >
             {creating && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}Create
           </Button>
         </DialogFooter>
