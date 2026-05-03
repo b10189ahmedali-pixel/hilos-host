@@ -16,6 +16,7 @@ const userItems = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
   { title: "My Servers", url: "/servers", icon: Server },
   { title: "Console", url: "/console", icon: Terminal },
+  { title: "Nodes", url: "/nodes", icon: Network },
 ];
 
 const adminItems = [
@@ -25,13 +26,24 @@ const adminItems = [
   { title: "Settings", url: "/admin/settings", icon: Settings },
 ];
 
-const nodeItems = [
-  { title: "Nodes", url: "/nodes", icon: Network },
-];
-
-export function PanelSidebar() {
+export function PanelSidebar({ isAdmin }: { isAdmin: boolean }) {
   const path = useRouterState({ select: (s) => s.location.pathname });
   const isActive = (url: string) => path === url;
+
+  const renderItems = (items: typeof userItems) => (
+    <SidebarMenu>
+      {items.map((item) => (
+        <SidebarMenuItem key={item.url}>
+          <SidebarMenuButton asChild isActive={isActive(item.url)}>
+            <Link to={item.url}>
+              <item.icon />
+              <span>{item.title}</span>
+            </Link>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      ))}
+    </SidebarMenu>
+  );
 
   return (
     <Sidebar collapsible="icon">
@@ -45,58 +57,16 @@ export function PanelSidebar() {
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>User</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {userItems.map((item) => (
-                <SidebarMenuItem key={item.url}>
-                  <SidebarMenuButton asChild isActive={isActive(item.url)}>
-                    <Link to={item.url}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
+          <SidebarGroupLabel>Workspace</SidebarGroupLabel>
+          <SidebarGroupContent>{renderItems(userItems)}</SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarGroup>
-          <SidebarGroupLabel>Infrastructure</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {nodeItems.map((item) => (
-                <SidebarMenuItem key={item.url}>
-                  <SidebarMenuButton asChild isActive={isActive(item.url)}>
-                    <Link to={item.url}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        <SidebarGroup>
-          <SidebarGroupLabel>Administration</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {adminItems.map((item) => (
-                <SidebarMenuItem key={item.url}>
-                  <SidebarMenuButton asChild isActive={isActive(item.url)}>
-                    <Link to={item.url}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {isAdmin && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Administration</SidebarGroupLabel>
+            <SidebarGroupContent>{renderItems(adminItems)}</SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
     </Sidebar>
   );

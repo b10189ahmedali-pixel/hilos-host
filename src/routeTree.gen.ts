@@ -9,219 +9,299 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as ServersRouteImport } from './routes/servers'
-import { Route as NodesRouteImport } from './routes/nodes'
-import { Route as ConsoleRouteImport } from './routes/console'
-import { Route as AdminRouteImport } from './routes/admin'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as AdminUsersRouteImport } from './routes/admin.users'
-import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
-import { Route as AdminEggsRouteImport } from './routes/admin.eggs'
+import { Route as RegisterRouteImport } from './routes/register'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
+import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
+import { Route as AuthenticatedServersRouteImport } from './routes/_authenticated/servers'
+import { Route as AuthenticatedNodesRouteImport } from './routes/_authenticated/nodes'
+import { Route as AuthenticatedConsoleRouteImport } from './routes/_authenticated/console'
+import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/_admin'
+import { Route as AuthenticatedAdminAdminIndexRouteImport } from './routes/_authenticated/_admin/admin.index'
+import { Route as AuthenticatedAdminAdminUsersRouteImport } from './routes/_authenticated/_admin/admin.users'
+import { Route as AuthenticatedAdminAdminSettingsRouteImport } from './routes/_authenticated/_admin/admin.settings'
+import { Route as AuthenticatedAdminAdminEggsRouteImport } from './routes/_authenticated/_admin/admin.eggs'
 
-const ServersRoute = ServersRouteImport.update({
-  id: '/servers',
-  path: '/servers',
+const RegisterRoute = RegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
   getParentRoute: () => rootRouteImport,
 } as any)
-const NodesRoute = NodesRouteImport.update({
-  id: '/nodes',
-  path: '/nodes',
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ConsoleRoute = ConsoleRouteImport.update({
-  id: '/console',
-  path: '/console',
+const AuthenticatedRoute = AuthenticatedRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminRoute = AdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const IndexRoute = IndexRouteImport.update({
+const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AdminUsersRoute = AdminUsersRouteImport.update({
-  id: '/users',
-  path: '/users',
-  getParentRoute: () => AdminRoute,
+const AuthenticatedServersRoute = AuthenticatedServersRouteImport.update({
+  id: '/servers',
+  path: '/servers',
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AdminSettingsRoute = AdminSettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => AdminRoute,
+const AuthenticatedNodesRoute = AuthenticatedNodesRouteImport.update({
+  id: '/nodes',
+  path: '/nodes',
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AdminEggsRoute = AdminEggsRouteImport.update({
-  id: '/eggs',
-  path: '/eggs',
-  getParentRoute: () => AdminRoute,
+const AuthenticatedConsoleRoute = AuthenticatedConsoleRouteImport.update({
+  id: '/console',
+  path: '/console',
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
+  id: '/_admin',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedAdminAdminIndexRoute =
+  AuthenticatedAdminAdminIndexRouteImport.update({
+    id: '/admin/',
+    path: '/admin/',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminAdminUsersRoute =
+  AuthenticatedAdminAdminUsersRouteImport.update({
+    id: '/admin/users',
+    path: '/admin/users',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminAdminSettingsRoute =
+  AuthenticatedAdminAdminSettingsRouteImport.update({
+    id: '/admin/settings',
+    path: '/admin/settings',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminAdminEggsRoute =
+  AuthenticatedAdminAdminEggsRouteImport.update({
+    id: '/admin/eggs',
+    path: '/admin/eggs',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/admin': typeof AdminRouteWithChildren
-  '/console': typeof ConsoleRoute
-  '/nodes': typeof NodesRoute
-  '/servers': typeof ServersRoute
-  '/admin/eggs': typeof AdminEggsRoute
-  '/admin/settings': typeof AdminSettingsRoute
-  '/admin/users': typeof AdminUsersRoute
+  '/': typeof AuthenticatedIndexRoute
+  '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
+  '/console': typeof AuthenticatedConsoleRoute
+  '/nodes': typeof AuthenticatedNodesRoute
+  '/servers': typeof AuthenticatedServersRoute
+  '/admin/eggs': typeof AuthenticatedAdminAdminEggsRoute
+  '/admin/settings': typeof AuthenticatedAdminAdminSettingsRoute
+  '/admin/users': typeof AuthenticatedAdminAdminUsersRoute
+  '/admin/': typeof AuthenticatedAdminAdminIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/admin': typeof AdminRouteWithChildren
-  '/console': typeof ConsoleRoute
-  '/nodes': typeof NodesRoute
-  '/servers': typeof ServersRoute
-  '/admin/eggs': typeof AdminEggsRoute
-  '/admin/settings': typeof AdminSettingsRoute
-  '/admin/users': typeof AdminUsersRoute
+  '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
+  '/': typeof AuthenticatedIndexRoute
+  '/console': typeof AuthenticatedConsoleRoute
+  '/nodes': typeof AuthenticatedNodesRoute
+  '/servers': typeof AuthenticatedServersRoute
+  '/admin/eggs': typeof AuthenticatedAdminAdminEggsRoute
+  '/admin/settings': typeof AuthenticatedAdminAdminSettingsRoute
+  '/admin/users': typeof AuthenticatedAdminAdminUsersRoute
+  '/admin': typeof AuthenticatedAdminAdminIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/admin': typeof AdminRouteWithChildren
-  '/console': typeof ConsoleRoute
-  '/nodes': typeof NodesRoute
-  '/servers': typeof ServersRoute
-  '/admin/eggs': typeof AdminEggsRoute
-  '/admin/settings': typeof AdminSettingsRoute
-  '/admin/users': typeof AdminUsersRoute
+  '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
+  '/_authenticated/_admin': typeof AuthenticatedAdminRouteWithChildren
+  '/_authenticated/console': typeof AuthenticatedConsoleRoute
+  '/_authenticated/nodes': typeof AuthenticatedNodesRoute
+  '/_authenticated/servers': typeof AuthenticatedServersRoute
+  '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/_authenticated/_admin/admin/eggs': typeof AuthenticatedAdminAdminEggsRoute
+  '/_authenticated/_admin/admin/settings': typeof AuthenticatedAdminAdminSettingsRoute
+  '/_authenticated/_admin/admin/users': typeof AuthenticatedAdminAdminUsersRoute
+  '/_authenticated/_admin/admin/': typeof AuthenticatedAdminAdminIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/admin'
+    | '/login'
+    | '/register'
     | '/console'
     | '/nodes'
     | '/servers'
     | '/admin/eggs'
     | '/admin/settings'
     | '/admin/users'
+    | '/admin/'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/login'
+    | '/register'
     | '/'
-    | '/admin'
     | '/console'
     | '/nodes'
     | '/servers'
     | '/admin/eggs'
     | '/admin/settings'
     | '/admin/users'
+    | '/admin'
   id:
     | '__root__'
-    | '/'
-    | '/admin'
-    | '/console'
-    | '/nodes'
-    | '/servers'
-    | '/admin/eggs'
-    | '/admin/settings'
-    | '/admin/users'
+    | '/_authenticated'
+    | '/login'
+    | '/register'
+    | '/_authenticated/_admin'
+    | '/_authenticated/console'
+    | '/_authenticated/nodes'
+    | '/_authenticated/servers'
+    | '/_authenticated/'
+    | '/_authenticated/_admin/admin/eggs'
+    | '/_authenticated/_admin/admin/settings'
+    | '/_authenticated/_admin/admin/users'
+    | '/_authenticated/_admin/admin/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  AdminRoute: typeof AdminRouteWithChildren
-  ConsoleRoute: typeof ConsoleRoute
-  NodesRoute: typeof NodesRoute
-  ServersRoute: typeof ServersRoute
+  AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
+  LoginRoute: typeof LoginRoute
+  RegisterRoute: typeof RegisterRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/servers': {
-      id: '/servers'
-      path: '/servers'
-      fullPath: '/servers'
-      preLoaderRoute: typeof ServersRouteImport
+    '/register': {
+      id: '/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof RegisterRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/nodes': {
-      id: '/nodes'
-      path: '/nodes'
-      fullPath: '/nodes'
-      preLoaderRoute: typeof NodesRouteImport
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/console': {
-      id: '/console'
-      path: '/console'
-      fullPath: '/console'
-      preLoaderRoute: typeof ConsoleRouteImport
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin': {
-      id: '/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AdminRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/': {
-      id: '/'
+    '/_authenticated/': {
+      id: '/_authenticated/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AuthenticatedIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
-    '/admin/users': {
-      id: '/admin/users'
-      path: '/users'
+    '/_authenticated/servers': {
+      id: '/_authenticated/servers'
+      path: '/servers'
+      fullPath: '/servers'
+      preLoaderRoute: typeof AuthenticatedServersRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/nodes': {
+      id: '/_authenticated/nodes'
+      path: '/nodes'
+      fullPath: '/nodes'
+      preLoaderRoute: typeof AuthenticatedNodesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/console': {
+      id: '/_authenticated/console'
+      path: '/console'
+      fullPath: '/console'
+      preLoaderRoute: typeof AuthenticatedConsoleRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/_admin': {
+      id: '/_authenticated/_admin'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/_admin/admin/': {
+      id: '/_authenticated/_admin/admin/'
+      path: '/admin'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AuthenticatedAdminAdminIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/_admin/admin/users': {
+      id: '/_authenticated/_admin/admin/users'
+      path: '/admin/users'
       fullPath: '/admin/users'
-      preLoaderRoute: typeof AdminUsersRouteImport
-      parentRoute: typeof AdminRoute
+      preLoaderRoute: typeof AuthenticatedAdminAdminUsersRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
     }
-    '/admin/settings': {
-      id: '/admin/settings'
-      path: '/settings'
+    '/_authenticated/_admin/admin/settings': {
+      id: '/_authenticated/_admin/admin/settings'
+      path: '/admin/settings'
       fullPath: '/admin/settings'
-      preLoaderRoute: typeof AdminSettingsRouteImport
-      parentRoute: typeof AdminRoute
+      preLoaderRoute: typeof AuthenticatedAdminAdminSettingsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
     }
-    '/admin/eggs': {
-      id: '/admin/eggs'
-      path: '/eggs'
+    '/_authenticated/_admin/admin/eggs': {
+      id: '/_authenticated/_admin/admin/eggs'
+      path: '/admin/eggs'
       fullPath: '/admin/eggs'
-      preLoaderRoute: typeof AdminEggsRouteImport
-      parentRoute: typeof AdminRoute
+      preLoaderRoute: typeof AuthenticatedAdminAdminEggsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
     }
   }
 }
 
-interface AdminRouteChildren {
-  AdminEggsRoute: typeof AdminEggsRoute
-  AdminSettingsRoute: typeof AdminSettingsRoute
-  AdminUsersRoute: typeof AdminUsersRoute
+interface AuthenticatedAdminRouteChildren {
+  AuthenticatedAdminAdminEggsRoute: typeof AuthenticatedAdminAdminEggsRoute
+  AuthenticatedAdminAdminSettingsRoute: typeof AuthenticatedAdminAdminSettingsRoute
+  AuthenticatedAdminAdminUsersRoute: typeof AuthenticatedAdminAdminUsersRoute
+  AuthenticatedAdminAdminIndexRoute: typeof AuthenticatedAdminAdminIndexRoute
 }
 
-const AdminRouteChildren: AdminRouteChildren = {
-  AdminEggsRoute: AdminEggsRoute,
-  AdminSettingsRoute: AdminSettingsRoute,
-  AdminUsersRoute: AdminUsersRoute,
+const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
+  AuthenticatedAdminAdminEggsRoute: AuthenticatedAdminAdminEggsRoute,
+  AuthenticatedAdminAdminSettingsRoute: AuthenticatedAdminAdminSettingsRoute,
+  AuthenticatedAdminAdminUsersRoute: AuthenticatedAdminAdminUsersRoute,
+  AuthenticatedAdminAdminIndexRoute: AuthenticatedAdminAdminIndexRoute,
 }
 
-const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+const AuthenticatedAdminRouteWithChildren =
+  AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
+
+interface AuthenticatedRouteChildren {
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
+  AuthenticatedConsoleRoute: typeof AuthenticatedConsoleRoute
+  AuthenticatedNodesRoute: typeof AuthenticatedNodesRoute
+  AuthenticatedServersRoute: typeof AuthenticatedServersRoute
+  AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+}
+
+const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
+  AuthenticatedConsoleRoute: AuthenticatedConsoleRoute,
+  AuthenticatedNodesRoute: AuthenticatedNodesRoute,
+  AuthenticatedServersRoute: AuthenticatedServersRoute,
+  AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+}
+
+const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
+  AuthenticatedRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  AdminRoute: AdminRouteWithChildren,
-  ConsoleRoute: ConsoleRoute,
-  NodesRoute: NodesRoute,
-  ServersRoute: ServersRoute,
+  AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  LoginRoute: LoginRoute,
+  RegisterRoute: RegisterRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}
