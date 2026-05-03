@@ -23,6 +23,7 @@ const adminItems = [
   { title: "Admin Overview", url: "/admin", icon: Shield },
   { title: "Users", url: "/admin/users", icon: Users },
   { title: "Eggs", url: "/admin/eggs", icon: Egg },
+  { title: "Server Scripts", url: "/admin/scripts", icon: FileCode },
   { title: "Settings", url: "/admin/settings", icon: Settings },
 ];
 
