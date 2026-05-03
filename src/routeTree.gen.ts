@@ -20,6 +20,7 @@ import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedAdminAdminIndexRouteImport } from './routes/_authenticated/_admin/admin.index'
 import { Route as AuthenticatedAdminAdminUsersRouteImport } from './routes/_authenticated/_admin/admin.users'
 import { Route as AuthenticatedAdminAdminSettingsRouteImport } from './routes/_authenticated/_admin/admin.settings'
+import { Route as AuthenticatedAdminAdminScriptsRouteImport } from './routes/_authenticated/_admin/admin.scripts'
 import { Route as AuthenticatedAdminAdminEggsRouteImport } from './routes/_authenticated/_admin/admin.eggs'
 
 const RegisterRoute = RegisterRouteImport.update({
@@ -78,6 +79,12 @@ const AuthenticatedAdminAdminSettingsRoute =
     path: '/admin/settings',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminAdminScriptsRoute =
+  AuthenticatedAdminAdminScriptsRouteImport.update({
+    id: '/admin/scripts',
+    path: '/admin/scripts',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminAdminEggsRoute =
   AuthenticatedAdminAdminEggsRouteImport.update({
     id: '/admin/eggs',
@@ -93,6 +100,7 @@ export interface FileRoutesByFullPath {
   '/nodes': typeof AuthenticatedNodesRoute
   '/servers': typeof AuthenticatedServersRoute
   '/admin/eggs': typeof AuthenticatedAdminAdminEggsRoute
+  '/admin/scripts': typeof AuthenticatedAdminAdminScriptsRoute
   '/admin/settings': typeof AuthenticatedAdminAdminSettingsRoute
   '/admin/users': typeof AuthenticatedAdminAdminUsersRoute
   '/admin/': typeof AuthenticatedAdminAdminIndexRoute
@@ -105,6 +113,7 @@ export interface FileRoutesByTo {
   '/nodes': typeof AuthenticatedNodesRoute
   '/servers': typeof AuthenticatedServersRoute
   '/admin/eggs': typeof AuthenticatedAdminAdminEggsRoute
+  '/admin/scripts': typeof AuthenticatedAdminAdminScriptsRoute
   '/admin/settings': typeof AuthenticatedAdminAdminSettingsRoute
   '/admin/users': typeof AuthenticatedAdminAdminUsersRoute
   '/admin': typeof AuthenticatedAdminAdminIndexRoute
@@ -120,6 +129,7 @@ export interface FileRoutesById {
   '/_authenticated/servers': typeof AuthenticatedServersRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/_admin/admin/eggs': typeof AuthenticatedAdminAdminEggsRoute
+  '/_authenticated/_admin/admin/scripts': typeof AuthenticatedAdminAdminScriptsRoute
   '/_authenticated/_admin/admin/settings': typeof AuthenticatedAdminAdminSettingsRoute
   '/_authenticated/_admin/admin/users': typeof AuthenticatedAdminAdminUsersRoute
   '/_authenticated/_admin/admin/': typeof AuthenticatedAdminAdminIndexRoute
@@ -134,6 +144,7 @@ export interface FileRouteTypes {
     | '/nodes'
     | '/servers'
     | '/admin/eggs'
+    | '/admin/scripts'
     | '/admin/settings'
     | '/admin/users'
     | '/admin/'
@@ -146,6 +157,7 @@ export interface FileRouteTypes {
     | '/nodes'
     | '/servers'
     | '/admin/eggs'
+    | '/admin/scripts'
     | '/admin/settings'
     | '/admin/users'
     | '/admin'
@@ -160,6 +172,7 @@ export interface FileRouteTypes {
     | '/_authenticated/servers'
     | '/_authenticated/'
     | '/_authenticated/_admin/admin/eggs'
+    | '/_authenticated/_admin/admin/scripts'
     | '/_authenticated/_admin/admin/settings'
     | '/_authenticated/_admin/admin/users'
     | '/_authenticated/_admin/admin/'
@@ -250,6 +263,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminAdminSettingsRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/_admin/admin/scripts': {
+      id: '/_authenticated/_admin/admin/scripts'
+      path: '/admin/scripts'
+      fullPath: '/admin/scripts'
+      preLoaderRoute: typeof AuthenticatedAdminAdminScriptsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/_admin/admin/eggs': {
       id: '/_authenticated/_admin/admin/eggs'
       path: '/admin/eggs'
@@ -262,6 +282,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminAdminEggsRoute: typeof AuthenticatedAdminAdminEggsRoute
+  AuthenticatedAdminAdminScriptsRoute: typeof AuthenticatedAdminAdminScriptsRoute
   AuthenticatedAdminAdminSettingsRoute: typeof AuthenticatedAdminAdminSettingsRoute
   AuthenticatedAdminAdminUsersRoute: typeof AuthenticatedAdminAdminUsersRoute
   AuthenticatedAdminAdminIndexRoute: typeof AuthenticatedAdminAdminIndexRoute
@@ -269,6 +290,7 @@ interface AuthenticatedAdminRouteChildren {
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminAdminEggsRoute: AuthenticatedAdminAdminEggsRoute,
+  AuthenticatedAdminAdminScriptsRoute: AuthenticatedAdminAdminScriptsRoute,
   AuthenticatedAdminAdminSettingsRoute: AuthenticatedAdminAdminSettingsRoute,
   AuthenticatedAdminAdminUsersRoute: AuthenticatedAdminAdminUsersRoute,
   AuthenticatedAdminAdminIndexRoute: AuthenticatedAdminAdminIndexRoute,
@@ -305,3 +327,12 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}

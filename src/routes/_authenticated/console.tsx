@@ -40,7 +40,18 @@ function ConsolePage() {
   const [input, setInput] = useState("");
   const [history, setHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
-  const [autoscroll, setAutoscroll] = useState(true);
+  const prefKey = (id: string) => `hilos_console_prefs:${id}`;
+  const [autoscroll, setAutoscrollRaw] = useState(true);
+  const setAutoscroll = (v: boolean) => {
+    setAutoscrollRaw(v);
+    if (serverId && typeof window !== "undefined") {
+      try {
+        const raw = localStorage.getItem(prefKey(serverId));
+        const cur = raw ? JSON.parse(raw) : {};
+        localStorage.setItem(prefKey(serverId), JSON.stringify({ ...cur, autoscroll: v }));
+      } catch { /* noop */ }
+    }
+  };
 
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectAttempt = useRef(0);
@@ -86,6 +97,17 @@ function ConsolePage() {
     if (!serverId) {
       setStatus("idle");
       return;
+    }
+
+    // Restore per-server prefs
+    if (typeof window !== "undefined") {
+      try {
+        const raw = localStorage.getItem(prefKey(serverId));
+        if (raw) {
+          const p = JSON.parse(raw) as { autoscroll?: boolean };
+          if (typeof p.autoscroll === "boolean") setAutoscrollRaw(p.autoscroll);
+        }
+      } catch { /* noop */ }
     }
 
     let cancelled = false;
@@ -206,7 +228,19 @@ function ConsolePage() {
     logRef.current?.scrollTo({ top: logRef.current.scrollHeight });
   }, [lines, autoscroll]);
 
-  const clearLogs = () => setLines([]);
+  const clearLogs = () => {
+    setLines([]);
+    if (serverId && typeof window !== "undefined") {
+      try {
+        const raw = localStorage.getItem(prefKey(serverId));
+        const cur = raw ? JSON.parse(raw) : {};
+        localStorage.setItem(
+          prefKey(serverId),
+          JSON.stringify({ ...cur, clearedAt: Date.now() }),
+        );
+      } catch { /* noop */ }
+    }
+  };
 
   const send = (e: React.FormEvent) => {
     e.preventDefault();

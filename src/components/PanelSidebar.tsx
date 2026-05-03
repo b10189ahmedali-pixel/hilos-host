@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, Server, Shield, Network, Egg, Users, Settings, Terminal } from "lucide-react";
+import { LayoutDashboard, Server, Shield, Network, Egg, Users, Settings, Terminal, FileCode } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -23,6 +23,7 @@ const adminItems = [
   { title: "Admin Overview", url: "/admin", icon: Shield },
   { title: "Users", url: "/admin/users", icon: Users },
   { title: "Eggs", url: "/admin/eggs", icon: Egg },
+  { title: "Server Scripts", url: "/admin/scripts", icon: FileCode },
   { title: "Settings", url: "/admin/settings", icon: Settings },
 ];
 
