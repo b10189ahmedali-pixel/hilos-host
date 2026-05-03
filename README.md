@@ -1,6 +1,6 @@
 # MADE BY ❤ WITH NETHOST TEAM 
 
-- CONTACT ME AT ```riveog``` OR ```riveog__``` (DISCORD) FOR ANY ISSUE
+- CONTACT ME AT ```riveog_``` OR ```riveog__``` (DISCORD) FOR ANY ISSUE
 
 # ⚙️ Installation
 
