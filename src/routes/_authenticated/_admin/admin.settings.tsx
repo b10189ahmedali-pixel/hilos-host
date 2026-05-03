@@ -16,7 +16,7 @@ interface Settings {
 }
 
 export const Route = createFileRoute("/_authenticated/_admin/admin/settings")({
-  component: AdminSettings;,
+  component: AdminSettings,
 });
 
 function AdminSettings() {
