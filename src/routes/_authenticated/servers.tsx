@@ -16,7 +16,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Play, Square, RotateCw, Trash2, Search, Loader2, Sparkles } from "lucide-react";
+import { Play, Square, RotateCw, Trash2, Search, Loader2, Sparkles, Plus } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface Server {
   id: string;
@@ -89,6 +96,7 @@ function ServersPage() {
                 className="pl-8 w-64"
               />
             </div>
+            <CreateServerDialog onCreated={reload} />
             {settings?.freeServerEnabled && (
               <CreateFreeServerButton limits={settings.defaultLimits} onCreated={reload} />
             )}
@@ -271,3 +279,141 @@ function Limit({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
+
+interface Egg {
+  id: string;
+  name: string;
+  dockerImage?: string;
+  description?: string;
+  ports?: number[];
+}
+interface Node {
+  id: string;
+  name: string;
+  fqdn?: string;
+}
+
+function CreateServerDialog({ onCreated }: { onCreated: () => void }) {
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState("");
+  const [eggId, setEggId] = useState("");
+  const [nodeId, setNodeId] = useState("");
+  const [eggs, setEggs] = useState<Egg[] | null>(null);
+  const [nodes, setNodes] = useState<Node[] | null>(null);
+  const [settings, setSettings] = useState<Settings | null>(null);
+  const [creating, setCreating] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  const [loadErr, setLoadErr] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    setLoadErr(null);
+    Promise.all([
+      api<Egg[]>("/eggs").catch(() => api<Egg[]>("/admin/eggs")),
+      api<Node[]>("/nodes"),
+      api<Settings>("/settings/public").catch(() => null),
+    ])
+      .then(([e, n, s]) => {
+        setEggs(e ?? []);
+        setNodes(n ?? []);
+        setSettings(s);
+      })
+      .catch((e) => setLoadErr(e instanceof ApiError ? e.message : "Failed to load options"));
+  }, [open]);
+
+  const selectedEgg = eggs?.find((e) => e.id === eggId);
+  const limits = settings?.defaultLimits;
+
+  const create = async () => {
+    if (!name.trim() || !eggId || !nodeId) {
+      setErr("Name, egg, and node are required.");
+      return;
+    }
+    setCreating(true);
+    setErr(null);
+    try {
+      await api("/servers", {
+        method: "POST",
+        body: JSON.stringify({ name: name.trim(), eggId, nodeId }),
+      });
+      setOpen(false);
+      setName("");
+      setEggId("");
+      setNodeId("");
+      onCreated();
+    } catch (e) {
+      setErr(e instanceof ApiError ? e.message : "Failed to create server");
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <Button variant="outline" onClick={() => setOpen(true)}>
+        <Plus className="h-4 w-4 mr-2" /> New Server
+      </Button>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Create a new server</DialogTitle>
+          <DialogDescription>
+            Pick an egg and node, then review the effective resource limits before deploying.
+          </DialogDescription>
+        </DialogHeader>
+        {loadErr && <div className="text-sm text-destructive">{loadErr}</div>}
+        <div className="space-y-4">
+          <div>
+            <label className="text-sm">Server name</label>
+            <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="my-server" disabled={creating} />
+          </div>
+          <div>
+            <label className="text-sm">Egg (template)</label>
+            <Select value={eggId} onValueChange={setEggId}>
+              <SelectTrigger><SelectValue placeholder={eggs ? "Select an egg…" : "Loading eggs…"} /></SelectTrigger>
+              <SelectContent>
+                {(eggs ?? []).map((e) => (
+                  <SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {selectedEgg && (
+              <div className="text-xs text-muted-foreground mt-1">
+                {selectedEgg.dockerImage} · ports: {(selectedEgg.ports ?? []).join(", ") || "—"}
+              </div>
+            )}
+          </div>
+          <div>
+            <label className="text-sm">Node</label>
+            <Select value={nodeId} onValueChange={setNodeId}>
+              <SelectTrigger><SelectValue placeholder={nodes ? "Select a node…" : "Loading nodes…"} /></SelectTrigger>
+              <SelectContent>
+                {(nodes ?? []).map((n) => (
+                  <SelectItem key={n.id} value={n.id}>{n.name}{n.fqdn ? ` (${n.fqdn})` : ""}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          {limits && (
+            <div className="rounded-md border border-border bg-muted/40 p-3 text-xs">
+              <div className="font-medium mb-2 text-foreground">Effective resource limits</div>
+              <div className="grid grid-cols-2 gap-2">
+                <Limit label="RAM" value={`${limits.ramMb} MB`} />
+                <Limit label="CPU" value={`${limits.cpuPercent}%`} />
+                <Limit label="Disk" value={`${limits.diskMb} MB`} />
+                <Limit label="Network" value={`${limits.networkMbps} Mbps`} />
+              </div>
+            </div>
+          )}
+          {err && <div className="text-sm text-destructive">{err}</div>}
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setOpen(false)} disabled={creating}>Cancel</Button>
+          <Button onClick={create} disabled={creating || !eggId || !nodeId || !name.trim()}>
+            {creating && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}Create
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
