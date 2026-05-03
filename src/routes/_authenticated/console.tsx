@@ -99,6 +99,17 @@ function ConsolePage() {
       return;
     }
 
+    // Restore per-server prefs
+    if (typeof window !== "undefined") {
+      try {
+        const raw = localStorage.getItem(prefKey(serverId));
+        if (raw) {
+          const p = JSON.parse(raw) as { autoscroll?: boolean };
+          if (typeof p.autoscroll === "boolean") setAutoscrollRaw(p.autoscroll);
+        }
+      } catch { /* noop */ }
+    }
+
     let cancelled = false;
 
     // Ownership / permission preflight: server must verify the JWT can read this server.
