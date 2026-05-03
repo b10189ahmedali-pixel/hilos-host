@@ -1,3 +1,7 @@
+# MADE BY ❤ WITH NETHOST TEAM 
+
+- CONTACT ME AT ```riveog``` OR ```riveog__``` (DISCORD) FOR ANY ISSUE
+
 # ⚙️ Installation
 
 ## 🚀 One-Line Installer (Recommended)
