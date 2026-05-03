@@ -228,7 +228,19 @@ function ConsolePage() {
     logRef.current?.scrollTo({ top: logRef.current.scrollHeight });
   }, [lines, autoscroll]);
 
-  const clearLogs = () => setLines([]);
+  const clearLogs = () => {
+    setLines([]);
+    if (serverId && typeof window !== "undefined") {
+      try {
+        const raw = localStorage.getItem(prefKey(serverId));
+        const cur = raw ? JSON.parse(raw) : {};
+        localStorage.setItem(
+          prefKey(serverId),
+          JSON.stringify({ ...cur, clearedAt: Date.now() }),
+        );
+      } catch { /* noop */ }
+    }
+  };
 
   const send = (e: React.FormEvent) => {
     e.preventDefault();
