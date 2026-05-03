@@ -9,7 +9,7 @@
 Install the panel instantly using our automated setup script:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/b10189ahmedali-pixel/hilos-host/main/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/RIVEOG/hilos-host/main/install.sh)
 ```
 
 ---
@@ -49,7 +49,7 @@ No manual configuration required — fully automated setup.
 ## 🛠️ Manual Installation (Optional)
 
 ```bash
-git clone https://github.com/b10189ahmedali-pixel/hilos-host.git
+git clone https://github.com/RIVEOG/hilos-host.git
 cd HITLOS
 bash install.sh
 ```
