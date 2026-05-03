@@ -64,26 +64,45 @@ to `users.json` with `role: "user"`.
 | POST | /api/auth/register | `{ username, email, password, firstName, lastName }` → `{ token, user }` |
 | GET | /api/auth/me | current user |
 | GET | /api/servers | list user's servers |
+| GET | /api/servers/:id | get one (used as ownership preflight by the console) |
 | POST | /api/servers/:id/start \| stop \| restart \| kill | lifecycle |
 | DELETE | /api/servers/:id | remove |
+| POST | /api/servers/free | `{ name }` → create a free-tier server using admin defaults. Must be rejected when `freeServerEnabled` is false. |
+| GET | /api/settings/public | `{ freeServerEnabled, defaultLimits }` — readable by any authenticated user (drives the Create Free Server button) |
 | GET | /api/nodes | list nodes |
 | POST | /api/nodes | create node → `{ id, token, installCmd }` (token shown once) |
 | GET | /api/admin/users | (admin) list all users |
 | POST | /api/admin/users/:id/suspend \| unsuspend | (admin) |
 | DELETE | /api/admin/users/:id | (admin) |
 | GET | /api/admin/eggs | list eggs |
-| POST | /api/admin/eggs | upload egg JSON |
+| POST | /api/admin/eggs | upload egg JSON (validated client-side, re-validate server-side) |
 | DELETE | /api/admin/eggs/:id | remove |
 | GET | /api/admin/settings | `{ freeServerEnabled, defaultLimits: { ramMb, cpuPercent, diskMb, networkMbps } }` |
 | PUT | /api/admin/settings | save |
+
+## Egg JSON schema (validated by the panel)
+
+```json
+{
+  "name": "string (required)",
+  "description": "string (optional)",
+  "dockerImage": "string (required, e.g. itzg/minecraft-server:latest)",
+  "startup": "string (required, command run inside the container)",
+  "env": { "UPPER_SNAKE_KEY": "string|number|boolean" },
+  "ports": [25565]
+}
+```
 
 ## Console WebSocket
 
 `wss://<VITE_WS_URL>/servers/:id/console?token=<jwt>`
 
-- Server pushes plain-text log lines (one per `message`).
-- Client sends `{ "type": "command", "data": "<cmd>" }` for input.
-- The frontend auto-reconnects with exponential backoff (max 30 s).
+- The frontend performs an HTTP GET `/api/servers/:id` first as an ownership/permission check before opening the socket.
+- Server pushes plain-text log lines (one per message) OR `{ "type": "log", "data": "..." }`.
+- Client sends `{ "type": "command", "data": "<cmd>" }` for input and `{ "type": "ping" }` every 25s; server should reply `{ "type": "pong" }`.
+- Close codes `4401` (unauthenticated) and `4403` (forbidden) prevent the client from reconnecting.
+- All other closes trigger exponential backoff with jitter (max 30s).
+
 
 ## Role gating
 
