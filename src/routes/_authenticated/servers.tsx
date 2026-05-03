@@ -16,7 +16,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Play, Square, RotateCw, Trash2, Search, Loader2, Sparkles } from "lucide-react";
+import { Play, Square, RotateCw, Trash2, Search, Loader2, Sparkles, Plus } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface Server {
   id: string;
@@ -89,6 +96,7 @@ function ServersPage() {
                 className="pl-8 w-64"
               />
             </div>
+            <CreateServerDialog onCreated={reload} />
             {settings?.freeServerEnabled && (
               <CreateFreeServerButton limits={settings.defaultLimits} onCreated={reload} />
             )}
