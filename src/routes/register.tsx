@@ -81,7 +81,7 @@ function RegisterPage() {
             </Button>
             <p className="text-sm text-center text-muted-foreground">
               Already have an account?{" "}
-              <Link to="/login" className="text-primary hover:underline">
+              <Link to="/login" search={{ redirect: "/" }} className="text-primary hover:underline">
                 Sign in
               </Link>
             </p>

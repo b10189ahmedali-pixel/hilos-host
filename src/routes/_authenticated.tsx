@@ -23,7 +23,7 @@ function AuthLayout() {
 
   const handleLogout = () => {
     auth.logout();
-    router.navigate({ to: "/login" });
+    router.navigate({ to: "/login", search: { redirect: "/" } });
   };
 
   return (
