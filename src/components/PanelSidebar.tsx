@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, Server, Shield, Network, Egg, Users, Settings, Terminal } from "lucide-react";
+import { LayoutDashboard, Server, Shield, Network, Egg, Users, Settings, Terminal, FileCode } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
