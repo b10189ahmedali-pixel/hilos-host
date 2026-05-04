@@ -27,10 +27,26 @@ function DefaultErrorComponent({ error, reset }: { error: Error; reset: () => vo
   );
 }
 
+// Safe default so beforeLoad guards never read isAuthenticated off undefined
+// before AuthProvider has had a chance to inject the live auth state.
+const defaultAuth: AuthState = {
+  isAuthenticated: false,
+  user: null,
+  loading: false,
+  hasRole: () => false,
+  login: async () => {
+    throw new Error("Auth not ready");
+  },
+  register: async () => {
+    throw new Error("Auth not ready");
+  },
+  logout: () => {},
+};
+
 export const getRouter = () => {
   return createRouter({
     routeTree,
-    context: { auth: undefined! } as RouterContext,
+    context: { auth: defaultAuth },
     scrollRestoration: true,
     defaultPreloadStaleTime: 0,
     defaultErrorComponent: DefaultErrorComponent,
