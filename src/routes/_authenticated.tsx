@@ -7,7 +7,7 @@ import { LogOut } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated")({
   beforeLoad: ({ context, location }) => {
-    if (!context.auth.isAuthenticated) {
+    if (!context.auth?.isAuthenticated) {
       throw redirect({
         to: "/login",
         search: { redirect: location.href },

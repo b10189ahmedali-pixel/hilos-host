@@ -9,7 +9,7 @@ import { Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/register")({
   beforeLoad: ({ context }) => {
-    if (context.auth.isAuthenticated) throw redirect({ to: "/" });
+    if (context.auth?.isAuthenticated) throw redirect({ to: "/" });
   },
   component: RegisterPage,
 });
