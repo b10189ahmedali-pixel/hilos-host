@@ -79,15 +79,12 @@ start_app() {
 
     pm2 delete "$APP_NAME" >/dev/null 2>&1
 
-    # Vite
     if grep -q "\"dev\":.*vite" package.json 2>/dev/null; then
         pm2 start "npm run dev -- --host 0.0.0.0 --port $PORT" --name "$APP_NAME"
 
-    # CRA
     elif grep -q "\"start\":.*react-scripts" package.json 2>/dev/null; then
         PORT=$PORT pm2 start npm --name "$APP_NAME" -- start
 
-    # Generic npm start
     elif grep -q "\"start\":" package.json 2>/dev/null; then
         PORT=$PORT pm2 start npm --name "$APP_NAME" -- start
 
@@ -165,6 +162,41 @@ EOF
     echo -e "${GREEN}Node configuration saved.${NC}"
 }
 
+# ---------- Start Node ----------
+start_node() {
+    clear
+    cd "$FOLDER" 2>/dev/null || { echo "Install files first."; return; }
+
+    if [ ! -f nodes.json ] || [ ! -f nodes-server.json ]; then
+        echo -e "${RED}Required node files missing.${NC}"
+        return
+    fi
+
+    TOKEN1=$(jq -r '.token' nodes.json)
+    TOKENID1=$(jq -r '.token_id' nodes.json)
+    PANEL1=$(jq -r '.panel_link' nodes.json)
+    PANELID1=$(jq -r '.panel_id' nodes.json)
+
+    TOKEN2=$(jq -r '.token' nodes-server.json)
+    TOKENID2=$(jq -r '.token_id' nodes-server.json)
+    PANEL2=$(jq -r '.panel_link' nodes-server.json)
+    PANELID2=$(jq -r '.panel_id' nodes-server.json)
+
+    if [[ "$TOKEN1" == "$TOKEN2" && "$TOKENID1" == "$TOKENID2" && "$PANEL1" == "$PANEL2" && "$PANELID1" == "$PANELID2" ]]; then
+        
+cat >> nodes-server.json <<EOF
+
+{
+ "STATUS":"ONLINE"
+}
+EOF
+
+        echo -e "${GREEN}Node started (STATUS added).${NC}"
+    else
+        echo -e "${RED}Node credentials do not match.${NC}"
+    fi
+}
+
 # ---------- Restart ----------
 restart_panel() {
     pm2 restart "$APP_NAME"
@@ -188,7 +220,8 @@ echo "3) Node Setup"
 echo "4) Restart Panel"
 echo "5) View Logs"
 echo "6) PM2 Status"
-echo "7) Exit"
+echo "7) Start Node"
+echo "8) Exit"
 echo "======================================"
 
 read -p "Select Option: " choice
@@ -200,7 +233,8 @@ case $choice in
 4) restart_panel ;;
 5) view_logs ;;
 6) pm2 status ;;
-7) exit ;;
+7) start_node ;;
+8) exit ;;
 *) echo "Invalid Option" ;;
 esac
 
