@@ -12,7 +12,7 @@ export const Route = createFileRoute("/login")({
     redirect: typeof s.redirect === "string" ? s.redirect : "/",
   }),
   beforeLoad: ({ context, search }) => {
-    if (context.auth.isAuthenticated) {
+    if (context.auth?.isAuthenticated) {
       throw redirect({ to: search.redirect });
     }
   },
